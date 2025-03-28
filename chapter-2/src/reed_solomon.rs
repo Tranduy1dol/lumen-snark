@@ -1,3 +1,5 @@
+use rand::random;
+
 pub struct Party {
     data: Vec<u64>,
 }
@@ -20,33 +22,29 @@ impl Party {
     }
 }
 
-mod test {
-    use crate::reed_solomon::Party;
-    use rand::random;
+pub fn reed_solomon_simulation() {
+    // Define data
+    let data = vec![1, 2, 3, 4, 5];
+    let n = data.len() as u64;
 
-    #[test]
-    fn reed_solomon_example() {
-        // Define data
-        let data = vec![1, 2, 3, 4, 5];
-        let n = data.len() as u64;
+    // Create parties
+    let alice = Party::new(data.clone());
+    let bob = Party::new(data.clone());
 
-        // Create parties
-        let alice = Party::new(data.clone());
-        let bob = Party::new(data.clone());
+    // Choose a random field and ensure it is larger than n^2
+    let field = 31;
+    assert!(field > n * n);
 
-        // Choose a random field and ensure it is larger than n^2
-        let field = 31;
-        assert!(field > n * n);
+    // Choose a random r from the field
+    let r = random::<u64>() % field;
 
-        // Choose a random r from the field
-        let r = random::<u64>() % field;
+    // Alice evaluates the polynomial at r
+    println!("Alice evaluating ...");
+    let v = alice.evaluate(r, field);
 
-        // Alice evaluates the polynomial at r
-        let v = alice.evaluate(r, field);
-
-        // By sending the value v to Bob, Bob evaluates the polynomial at r
-        // and checks if the data is the same.
-        // Note that Bob and Alice use the same hash function.
-        assert_eq!(bob.evaluate(r, field), v);
-    }
+    // By sending the value v to Bob, Bob evaluates the polynomial at r
+    // and checks if the data is the same.
+    // Note that Bob and Alice use the same hash function.
+    println!("Bob verifying ...");
+    assert_eq!(bob.evaluate(r, field), v);
 }
